@@ -11,28 +11,29 @@ namespace FileDownloader.Downloaders
     public class SftpDownloader : BaseDownloader, IDownloader
     {
         /// <summary>
-        /// Host of SFTP connection
+        /// SFTP Client instance
         /// </summary>
-        private readonly string _host;
+        private readonly SftpClientWrapper _sftpClient;
 
         /// <summary>
-        /// Username of SFTP connection
-        /// </summary>
-        private readonly string _username;
-
-        /// <summary>
-        /// Password of SFTP connection
-        /// </summary>
-        private readonly string _password;
-
-        /// <summary>
-        /// Initiates SFTP Downloader with defined maximum retries count
+        /// Initiates SFTP Downloader
         /// </summary>
         public SftpDownloader()
         {
-            _host = ConfigurationManager.AppSettings["sftpHost"];
-            _username = ConfigurationManager.AppSettings["sftpUserName"];
-            _password = ConfigurationManager.AppSettings["sftpPassword"];
+            var host = ConfigurationManager.AppSettings["sftpHost"];
+            var username = ConfigurationManager.AppSettings["sftpUserName"];
+            var password = ConfigurationManager.AppSettings["sftpPassword"];
+
+            _sftpClient = new SftpClientWrapper(host, username, password);
+        }
+
+        /// <summary>
+        /// Initiates SFTP Downloader with SFTP client passed through. Used for unit tests
+        /// </summary>
+        /// <param name="sftpClient">SFTP client</param>
+        public SftpDownloader(SftpClientWrapper sftpClient)
+        {
+            _sftpClient = sftpClient;
         }
 
         /// <summary>
@@ -42,11 +43,9 @@ namespace FileDownloader.Downloaders
         /// <param name="url">Url of resource to download</param>
         public void Download(Stream fileStream, Uri url)
         {
-            using (ISftpClientWrapper client = new SftpClientWrapper(_host, _username, _password))
-            {
-                client.ConnectClient();
+            _sftpClient.ConnectClient();
 
-                using (var sourceStream = client.CreateStream(url.LocalPath, FileMode.Open))
+                using (var sourceStream = _sftpClient.CreateStream(url.LocalPath, FileMode.Open))
                 {
                     if (fileStream.Position > 0) sourceStream.Seek(fileStream.Position, SeekOrigin.Begin);
 
@@ -60,8 +59,7 @@ namespace FileDownloader.Downloaders
                     DoDownload(fileStream, sourceStream);
                 }
 
-                client.DisconnectClient();
-            }
+            _sftpClient.DisconnectClient();
         }
     }
 }

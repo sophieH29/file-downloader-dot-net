@@ -5,7 +5,6 @@ using FileDownloader.Downloaders;
 using Moq;
 using Moq.Protected;
 using NUnit.Framework;
-using Renci.SshNet.Sftp;
 
 namespace FileDownloader.Tests.Downloaders
 {
@@ -25,10 +24,10 @@ namespace FileDownloader.Tests.Downloaders
             ConfigurationManager.AppSettings["sftpUserName"] = "sftpUserName";
             ConfigurationManager.AppSettings["sftpPassword"] = "sftpPassword";
 
-            _sftpDownloader = new Mock<SftpDownloader>();
+            _sftpClientMock = new Mock<SftpClientWrapper>("sftpHost", "sftpUserName", "sftpPassword");
+            _sftpDownloader = new Mock<SftpDownloader>(_sftpClientMock.Object);
             _fileStream = new Mock<Stream>();
             _sftpFileStream = new Mock<Stream>();
-            _sftpClientMock = new Mock<SftpClientWrapper>("sftpHost", "sftpUserName", "sftpPassword");
         }
 
         [Test]
