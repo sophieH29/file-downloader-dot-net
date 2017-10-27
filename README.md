@@ -30,5 +30,7 @@ FTP and SFTP are configurable through App.config
 - *sources* - resources that has to be downloaded. Can be taken from here or or passed through args
 
 
-**Scheme**
+**Implementation diagram**
+
+![Diagram](https://raw.githubusercontent.com/sophieH29/file-downloader-dot-net/master/DownloadManageFactory.jpg)
 
